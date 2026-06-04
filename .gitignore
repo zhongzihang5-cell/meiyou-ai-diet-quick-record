@@ -1,0 +1,8 @@
+.DS_Store
+*.log
+node_modules/
+dist/
+
+# accidental empty files from shell typos
+/cd
+/python3
