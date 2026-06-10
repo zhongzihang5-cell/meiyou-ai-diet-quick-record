@@ -138,7 +138,7 @@ function App(){
 
   React.useEffect(()=>{
     const onComboInsert = (event)=>{
-      const entry = window.createDietFeedbackComboDemoEntry?.(event?.detail?.scenario || 'combo-abfd-7');
+      const entry = window.createDietFeedbackComboDemoEntry?.(event?.detail?.scenario || 'combo-ab');
       if(!entry) return;
       const dayId = timeline.find(b=>b.type==='day' && b.isToday)?.id
         || window.resolveEntryDayId?.('', timeline);

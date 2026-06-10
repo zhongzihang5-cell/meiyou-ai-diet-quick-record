@@ -154,9 +154,71 @@ function DietCycleDietTip({ text, subText, icon = '🩸' }){
 function getCycleDietTipDisplay(cycleData){
   const day = cycleData?.day ?? 2;
   return {
-    text: '经期可以适当多吃些含铁食物，比如红肉、菠菜、黑木耳，帮助补充流失的铁元素',
+    text: getCycleDietTipText(),
     subText: `当前经期第 ${day} 天`,
   };
+}
+
+function getCycleDietTipText(){
+  return '经期可以适当多吃些含铁食物，比如红肉、菠菜、黑木耳，帮助补充流失的铁元素。';
+}
+
+function getUnlockTrendGuideText(daysWithRecord = 0){
+  const daysLeft = Math.max(0, 3 - daysWithRecord);
+  return `再记录 ${daysLeft} 天饮食，即可解锁热量趋势图。`;
+}
+
+function DietGuideBelowTotal({ daysWithRecord = 0 }){
+  return (
+    <p className="diet-fb-guide-below-total diet-fb-stagger-in">
+      {getUnlockTrendGuideText(daysWithRecord)}
+    </p>
+  );
+}
+
+function getDiversityInlineSuffix(count){
+  if (count == null || count < 5) return null;
+  return { count };
+}
+
+function DietAiAvgStats({ avgKcal, diversityCount, cycleText, cycleSplitParagraph }){
+  const diversity = getDiversityInlineSuffix(diversityCount);
+  const cycleInline = cycleText && !cycleSplitParagraph;
+
+  return (
+    <>
+      <p className="diet-fb-b-stats">
+        7日日均约{' '}
+        <span className="diet-fb-stat-accent">{formatKcal(avgKcal)} kcal</span>
+        {diversity && (
+          <>
+            ，今天吃了 <span className="diet-fb-stat-accent">{diversity.count}</span> 种食物，饮食多样性不错。
+          </>
+        )}
+        {cycleInline && <>，{cycleText}</>}
+      </p>
+      {cycleSplitParagraph && cycleText && (
+        <p className="diet-fb-b-stats-followup">{cycleText}</p>
+      )}
+    </>
+  );
+}
+
+function resolveShowAiInsights({ showAi, displayCfg, hasInlineCalorieInsight }){
+  if (!showAi) return false;
+  if (displayCfg) return shouldShowDisplayAi(displayCfg);
+  return !hasInlineCalorieInsight;
+}
+
+function shouldShowMealDiversity(displayCfg){
+  return !!(
+    displayCfg?.showDiversity
+    && displayCfg?.diversityPlacement !== 'inline-after-avg'
+  );
+}
+
+function shouldShowGuideBelowTotal(displayCfg){
+  return !!displayCfg?.showGuideBelowTotal;
 }
 
 function shouldShowDisplayAi(cfg){
@@ -207,6 +269,8 @@ function DietMilestoneTip({ milestone, surprise = false }){
   );
 }
 
+const DEFAULT_AI_BLOCK_ORDER = ['dayTotal', 'guide', 'chart', 'avg', 'milestone', 'cycleTip'];
+
 function DietCalorieAiBody({
   weekData = [],
   todayKcal,
@@ -222,31 +286,68 @@ function DietCalorieAiBody({
   const cfg = displayScenario && getConfig
     ? getConfig(displayScenario)
     : null;
-  const cycleTip = cfg?.showCycleTip ? getCycleDietTipDisplay(cycleData) : null;
+
+  const renderAiBlock = (blockType) => {
+    if (!cfg) return null;
+    switch (blockType) {
+      case 'dayTotal':
+        if (!cfg.showDayTotal) return null;
+        return (
+          <DietDayTotalSummary
+            key="dayTotal"
+            dayMealCount={dayMealCount}
+            dayTotalKcal={dayTotalKcal ?? todayKcal}
+          />
+        );
+      case 'guide':
+        if (!cfg.showGuide) return null;
+        return (
+          <div key="guide" className="diet-fb-guide-text">
+            {getUnlockTrendGuideText(daysWithRecord)}
+          </div>
+        );
+      case 'chart':
+        if (!cfg.showChart) return null;
+        return <DietTrendChart key="chart" data={weekData} todayKcal={todayKcal}/>;
+      case 'avg':
+        if (!cfg.showAvg || avgKcal == null) return null;
+        return (
+          <DietAiAvgStats
+            key="avg"
+            avgKcal={avgKcal}
+            diversityCount={
+              cfg.showDiversity && cfg.diversityPlacement === 'inline-after-avg'
+                ? todayFoodCount
+                : null
+            }
+            cycleText={
+              cfg.showCycleTip && cfg.cycleTipPlacement === 'inline-after-avg'
+                ? getCycleDietTipText()
+                : null
+            }
+            cycleSplitParagraph={!!cfg.cycleTipSplitParagraph}
+          />
+        );
+      case 'milestone':
+        if (!cfg.showMilestone) return null;
+        return (
+          <DietMilestoneTip
+            key="milestone"
+            milestone={cfg.showMilestone}
+            surprise={!!cfg.milestoneSurprise}
+          />
+        );
+      case 'cycleTip':
+        if (!cfg.showCycleTip || cfg.cycleTipPlacement === 'inline-after-avg') return null;
+        return <DietCycleDietTip key="cycleTip" {...getCycleDietTipDisplay(cycleData)}/>;
+      default:
+        return null;
+    }
+  };
 
   if (cfg) {
-    return (
-      <>
-        {cfg.showDayTotal && (
-          <DietDayTotalSummary dayMealCount={dayMealCount} dayTotalKcal={dayTotalKcal ?? todayKcal}/>
-        )}
-        {cfg.showGuide && (
-          <div className="diet-fb-guide-text">
-            再记录 {Math.max(0, 3 - daysWithRecord)} 天饮食，即可解锁热量趋势图
-          </div>
-        )}
-        {cfg.showChart && (
-          <DietTrendChart data={weekData} todayKcal={todayKcal}/>
-        )}
-        {cfg.showAvg && avgKcal != null && (
-          <div className="diet-fb-b-stats">7日日均约 <strong>{formatKcal(avgKcal)} kcal</strong></div>
-        )}
-        {cfg.showMilestone && (
-          <DietMilestoneTip milestone={cfg.showMilestone} surprise={!!cfg.milestoneSurprise}/>
-        )}
-        {cycleTip && <DietCycleDietTip {...cycleTip}/>}
-      </>
-    );
+    const blockOrder = cfg.aiBlockOrder || DEFAULT_AI_BLOCK_ORDER;
+    return <>{blockOrder.map((blockType) => renderAiBlock(blockType))}</>;
   }
 
   const showChart = daysWithRecord >= 3;
@@ -266,7 +367,7 @@ function DietCalorieAiBody({
   }
 
   return (
-    <div className="diet-fb-guide-text">再记录 {Math.max(0, 3 - daysWithRecord)} 天饮食，即可解锁热量趋势图</div>
+    <div className="diet-fb-guide-text">再记录 {Math.max(0, 3 - daysWithRecord)} 天饮食，即可解锁热量趋势图。</div>
   );
 }
 
@@ -342,6 +443,13 @@ function formatFoodTagLabel(item){
   return item?.name || '';
 }
 
+function formatFoodItemText(item){
+  if (typeof item === 'string') return item;
+  const name = item?.label || item?.name || '';
+  if (item?.kcal != null) return `${name} ${formatKcal(item.kcal)}千卡`;
+  return name;
+}
+
 function DietMealInsightCard({ insight }){
   if (!insight) return null;
 
@@ -376,32 +484,39 @@ function DietMealInsightCard({ insight }){
   );
 }
 
-function DietFoodResultSummary({ items = [], totalKcal, revealStep = 3, calorieInsight = null, diversityCount = null, compact = false }){
+function DietFoodResultSummary({
+  items = [],
+  totalKcal,
+  revealStep = 3,
+  calorieInsight = null,
+  diversityCount = null,
+  compact = false,
+  guideBelowTotalDays = null,
+}){
   const showDiversity = revealStep >= 1 && diversityCount != null && diversityCount >= 5;
   const showTotal = revealStep >= 1 && totalKcal != null;
   const showCalorieInsight = revealStep >= 1 && calorieInsight;
-  const showTags = (compact ? revealStep >= 1 : revealStep >= 2) && items.length > 0;
+  const showFoodList = (compact ? revealStep >= 1 : revealStep >= 2) && items.length > 0;
+  const showGuideBelowTotal = revealStep >= 1 && guideBelowTotalDays != null;
+  const foodListText = items.map(formatFoodItemText).filter(Boolean).join('，');
 
   return (
     <div className={'diet-fb-sec-a' + (compact ? ' is-compact' : '')}>
+      {showFoodList && (
+        <p className="diet-fb-food-list diet-fb-stagger-in">{foodListText}</p>
+      )}
       {showTotal && (
-        <div className="diet-fb-total-row diet-fb-stagger-in">
-          <span className="diet-fb-total-label">总卡路里</span>
-          <span className="diet-fb-total-value">{formatKcal(totalKcal)} kcal</span>
-        </div>
+        <p className="diet-fb-total-line diet-fb-stagger-in">
+          <span className="diet-fb-total-label">总热量：</span>
+          <span className="diet-fb-total-value">{formatKcal(totalKcal)} 千卡</span>
+        </p>
+      )}
+      {showGuideBelowTotal && (
+        <DietGuideBelowTotal daysWithRecord={guideBelowTotalDays}/>
       )}
       {showCalorieInsight && <DietMealInsightCard insight={calorieInsight}/>}
       {showDiversity && (
         <DietDiversityTip count={diversityCount} placement="meal"/>
-      )}
-      {showTags && (
-        <div className="diet-fb-tags diet-fb-stagger-in">
-          {items.map((item, i) => (
-            <span key={i} className="diet-fb-tag food">
-              {formatFoodTagLabel(item)}
-            </span>
-          ))}
-        </div>
       )}
     </div>
   );
@@ -410,13 +525,12 @@ function DietFoodResultSummary({ items = [], totalKcal, revealStep = 3, calorieI
 function DietSecALoading(){
   return (
     <div className="diet-fb-sec-a diet-fb-sec-loading" aria-hidden="true">
-      <div className="diet-fb-skeleton-total">
+      <div className="diet-fb-skeleton-food-list">
+        <div className="diet-fb-skeleton-line lg"/>
         <div className="diet-fb-skeleton-line md"/>
-        <div className="diet-fb-skeleton-line xs"/>
       </div>
-      <div className="diet-fb-skeleton-tags">
-        <span className="diet-fb-skeleton-tag"/>
-        <span className="diet-fb-skeleton-tag wide"/>
+      <div className="diet-fb-skeleton-total">
+        <div className="diet-fb-skeleton-line xs"/>
       </div>
     </div>
   );
@@ -617,11 +731,14 @@ function DietPhotoFeedbackCard({
   const calorieInsight = revealStep >= 1
     ? resolveCalorieInsightBelowTotal(totalKcal, displayCfg)
     : null;
-  const diversityCount = displayCfg?.showDiversity && revealStep >= 1
+  const diversityCount = shouldShowMealDiversity(displayCfg) && revealStep >= 1
     ? (ctx.todayFoodCount ?? 0)
     : null;
+  const guideBelowTotalDays = shouldShowGuideBelowTotal(displayCfg) && revealStep >= 1
+    ? (ctx.daysWithRecord ?? 0)
+    : null;
   const hasInlineCalorieInsight = !!(displayCfg?.showMealInsight || displayCfg?.showCalorieInsightCard);
-  const showAiInsights = showAi && (!hasInlineCalorieInsight || shouldShowDisplayAi(displayCfg));
+  const showAiInsights = resolveShowAiInsights({ showAi, displayCfg, hasInlineCalorieInsight });
   const mealInterpretation = showAiInsights && !hasInlineCalorieInsight ? interpretation : null;
 
   return (
@@ -642,6 +759,7 @@ function DietPhotoFeedbackCard({
             calorieInsight={calorieInsight}
             diversityCount={diversityCount}
             compact={!!displayCfg?.useCompactMeal}
+            guideBelowTotalDays={guideBelowTotalDays}
           />
         )}
         {isLoading && (
@@ -668,6 +786,7 @@ function DietPhotoFeedbackCard({
               dayTotalKcal={ctx.dayTotalKcal}
               displayScenario={displayScenario}
               cycleData={ctx.cycleData}
+              todayFoodCount={ctx.todayFoodCount ?? 0}
             />
           </DietAiInsightsShell>
         )}
@@ -734,12 +853,18 @@ function DietTextFeedbackCard({
   const calorieInsight = revealStep >= 1 && showCalories
     ? resolveCalorieInsightBelowTotal(totalKcal, displayCfg)
     : null;
-  const diversityCount = displayCfg?.showDiversity && revealStep >= 1 && showCalories
+  const diversityCount = shouldShowMealDiversity(displayCfg) && revealStep >= 1 && showCalories
     ? (ctx.todayFoodCount ?? 0)
     : null;
+  const guideBelowTotalDays = shouldShowGuideBelowTotal(displayCfg) && revealStep >= 1 && showCalories
+    ? (ctx.daysWithRecord ?? 0)
+    : null;
   const hasInlineCalorieInsight = !!(displayCfg?.showMealInsight || displayCfg?.showCalorieInsightCard);
-  const showAiInsights = showCalories && revealStep >= 3
-    && (!hasInlineCalorieInsight || shouldShowDisplayAi(displayCfg));
+  const showAiInsights = resolveShowAiInsights({
+    showAi: showCalories && revealStep >= 3,
+    displayCfg,
+    hasInlineCalorieInsight,
+  });
   const interpretation = showAiInsights && !hasInlineCalorieInsight
     ? getCalorieInterpretation(totalKcal)
     : null;
@@ -762,6 +887,7 @@ function DietTextFeedbackCard({
           calorieInsight={calorieInsight}
           diversityCount={diversityCount}
           compact={!!displayCfg?.useCompactMeal}
+          guideBelowTotalDays={guideBelowTotalDays}
         />
         {showAiInsights && (
           <DietAiInsightsShell displayScenario={displayScenario} isNew={isNew}>
@@ -774,6 +900,7 @@ function DietTextFeedbackCard({
               dayTotalKcal={ctx.dayTotalKcal}
               displayScenario={displayScenario}
               cycleData={ctx.cycleData}
+              todayFoodCount={ctx.todayFoodCount ?? 0}
             />
           </DietAiInsightsShell>
         )}

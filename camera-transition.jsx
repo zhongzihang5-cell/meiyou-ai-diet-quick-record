@@ -196,7 +196,7 @@ const CAMERA_PERMISSION_SCENARIO_KEY = 'my-demo-camera-permission-scenario';
 const CAMERA_PERMISSION_SCENARIOS = [
   { value: 'unauthorized', label: '场景1 · 未授权' },
   { value: 'authorized', label: '场景2 · 已授权' },
-  { value: 'text-diet', label: '场景3 · 文字/语音饮食' },
+  // text-diet（原场景3 · 文字/语音饮食）已从演示条隐藏，逻辑仍保留在 isDietTextRecordScenario
 ];
 
 function isCameraPermissionScenario(value) {
@@ -212,7 +212,9 @@ function isDietTextRecordScenario(value) {
 function readCameraPermissionScenario() {
   try {
     const value = sessionStorage.getItem(CAMERA_PERMISSION_SCENARIO_KEY) || 'unauthorized';
-    if (value === 'text-names-only' || value === 'text-with-portion') return 'text-diet';
+    if (value === 'text-diet' || value === 'text-names-only' || value === 'text-with-portion') {
+      return 'authorized';
+    }
     return value;
   } catch {
     return 'unauthorized';
@@ -784,7 +786,6 @@ function CameraPermissionScenarioBar() {
         {{
           unauthorized: '未授权：每次进入饮食相机都会先弹出权限弹窗；点「不允许」后显示权限引导页',
           authorized: '已授权：进入饮食相机不再弹出权限弹窗',
-          'text-diet': '文字/语音记录饮食：未说克数/份量时只展示食物名；含克数、碗、盘等则展示份量与卡路里',
         }[value] || ''}
       </p>
     </div>

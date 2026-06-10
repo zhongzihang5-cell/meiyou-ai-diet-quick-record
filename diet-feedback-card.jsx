@@ -397,24 +397,34 @@ const DIET_FEEDBACK_DISPLAY_SCENARIOS = [
   { value: 'day-total', label: '3 汇总', title: '场景3 · 当日汇总热量' },
   { value: 'day-total-trend', label: '4 汇总+图', title: '场景4 · 汇总+趋势图' },
   { value: 'day-total-trend-avg', label: '5 +均值', title: '场景5 · 汇总+趋势+均值' },
-  { value: 'meal-insight', label: '6 本餐', title: '场景6 · 本餐热量解读' },
-  { value: 'cycle-diet', label: '7 周期', title: '场景7 · 周期饮食关联' },
-  { value: 'diversity', label: '8 多样', title: '场景8 · 饮食多样性' },
-  { value: 'milestone-100', label: '9 百天', title: '场景9 · 记录满100天' },
 ];
 
 function getDietFeedbackDisplayConfig(scenario) {
   switch (scenario) {
     case 'guide':
-      return { showGuide: true, showChart: false, showDayTotal: false, showAvg: false, plainShell: true };
+      return { showGuide: true, showChart: false, showDayTotal: false, showAvg: false, plainShell: false };
     case 'trend':
       return { showGuide: false, showChart: true, showDayTotal: false, showAvg: false, plainShell: false };
     case 'day-total':
-      return { showGuide: false, showChart: false, showDayTotal: true, showAvg: false, plainShell: true };
+      return { showGuide: false, showChart: false, showDayTotal: true, showAvg: false, plainShell: false };
     case 'day-total-trend':
-      return { showGuide: false, showChart: true, showDayTotal: true, showAvg: false, plainShell: false };
+      return {
+        showGuide: false,
+        showChart: true,
+        showDayTotal: true,
+        showAvg: false,
+        plainShell: false,
+        aiBlockOrder: ['chart', 'dayTotal'],
+      };
     case 'day-total-trend-avg':
-      return { showGuide: false, showChart: true, showDayTotal: true, showAvg: true, plainShell: false };
+      return {
+        showGuide: false,
+        showChart: true,
+        showDayTotal: true,
+        showAvg: true,
+        plainShell: false,
+        aiBlockOrder: ['chart', 'dayTotal', 'avg'],
+      };
     case 'meal-insight':
       return {
         showGuide: true,
@@ -453,107 +463,16 @@ function getDietFeedbackDisplayConfig(scenario) {
         showCycleTip: true,
         plainShell: false,
       };
-    case 'combo-abfd-7':
+    case 'combo-ab':
       return {
         useCompactMeal: true,
         showGuide: false,
         showChart: true,
         showDayTotal: false,
         showAvg: true,
-        showMilestone: 7,
-        milestoneSurprise: false,
-        showCycleTip: true,
         plainShell: false,
       };
-    case 'combo-abfc-7':
-      return {
-        useCompactMeal: true,
-        showGuide: false,
-        showChart: true,
-        showDayTotal: false,
-        showAvg: true,
-        showMilestone: 7,
-        milestoneSurprise: false,
-        showCalorieInsightCard: true,
-        plainShell: false,
-      };
-    case 'combo-abfe-7':
-      return {
-        useCompactMeal: true,
-        showGuide: false,
-        showChart: true,
-        showDayTotal: false,
-        showAvg: true,
-        showMilestone: 7,
-        milestoneSurprise: false,
-        showDiversity: true,
-        plainShell: false,
-      };
-    case 'combo-abf-7':
-      return {
-        useCompactMeal: true,
-        showGuide: false,
-        showChart: true,
-        showDayTotal: false,
-        showAvg: true,
-        showMilestone: 7,
-        milestoneSurprise: false,
-        plainShell: false,
-      };
-    case 'combo-abdc-7':
-      return {
-        useCompactMeal: true,
-        showGuide: false,
-        showChart: true,
-        showDayTotal: false,
-        showAvg: true,
-        showCycleTip: true,
-        showCalorieInsightCard: true,
-        plainShell: false,
-      };
-    case 'combo-abde-7':
-      return {
-        useCompactMeal: true,
-        showGuide: false,
-        showChart: true,
-        showDayTotal: false,
-        showAvg: true,
-        showCycleTip: true,
-        showDiversity: true,
-        plainShell: false,
-      };
-    case 'combo-abd-7':
-      return {
-        useCompactMeal: true,
-        showGuide: false,
-        showChart: true,
-        showDayTotal: false,
-        showAvg: true,
-        showCycleTip: true,
-        plainShell: false,
-      };
-    case 'combo-abce-7':
-      return {
-        useCompactMeal: true,
-        showGuide: false,
-        showChart: true,
-        showDayTotal: false,
-        showAvg: true,
-        showCalorieInsightCard: true,
-        showDiversity: true,
-        plainShell: false,
-      };
-    case 'combo-abc-7':
-      return {
-        useCompactMeal: true,
-        showGuide: false,
-        showChart: true,
-        showDayTotal: false,
-        showAvg: true,
-        showCalorieInsightCard: true,
-        plainShell: false,
-      };
-    case 'combo-abe-7':
+    case 'combo-abe':
       return {
         useCompactMeal: true,
         showGuide: false,
@@ -561,15 +480,32 @@ function getDietFeedbackDisplayConfig(scenario) {
         showDayTotal: false,
         showAvg: true,
         showDiversity: true,
+        diversityPlacement: 'inline-after-avg',
         plainShell: false,
       };
-    case 'combo-ab-7':
+    case 'combo-abd':
       return {
         useCompactMeal: true,
         showGuide: false,
         showChart: true,
         showDayTotal: false,
         showAvg: true,
+        showCycleTip: true,
+        cycleTipPlacement: 'inline-after-avg',
+        plainShell: false,
+      };
+    case 'combo-abde':
+      return {
+        useCompactMeal: true,
+        showGuide: false,
+        showChart: true,
+        showDayTotal: false,
+        showAvg: true,
+        showCycleTip: true,
+        cycleTipPlacement: 'inline-after-avg',
+        cycleTipSplitParagraph: true,
+        showDiversity: true,
+        diversityPlacement: 'inline-after-avg',
         plainShell: false,
       };
     default:
@@ -629,66 +565,44 @@ function createDietFeedbackDisplayDemoEntry(displayScenario) {
 }
 
 const DIET_FEEDBACK_COMBO_SCENARIOS = [
-  { value: 'combo-abfd-7', label: 'C1', title: '组合1 · A+B+F+D' },
-  { value: 'combo-abfc-7', label: 'C2', title: '组合2 · A+B+F+C' },
-  { value: 'combo-abfe-7', label: 'C3', title: '组合3 · A+B+F+E' },
-  { value: 'combo-abf-7', label: 'C4', title: '组合4 · A+B+F' },
-  { value: 'combo-abdc-7', label: 'C5', title: '组合5 · A+B+D+C' },
-  { value: 'combo-abde-7', label: 'C6', title: '组合6 · A+B+D+E' },
-  { value: 'combo-abd-7', label: 'C7', title: '组合7 · A+B+D' },
-  { value: 'combo-abce-7', label: 'C8', title: '组合8 · A+B+C+E' },
-  { value: 'combo-abc-7', label: 'C9', title: '组合9 · A+B+C' },
-  { value: 'combo-abe-7', label: 'C10', title: '组合10 · A+B+E' },
-  { value: 'combo-ab-7', label: 'C11', title: '组合11 · A+B' },
+  { value: 'combo-ab', label: 'A+B', title: '紧凑识别 + 7日趋势与均值' },
+  { value: 'combo-abe', label: 'A+B+E', title: '紧凑识别 + 趋势 + 饮食多样性' },
+  { value: 'combo-abd', label: 'A+B+D', title: '紧凑识别 + 趋势 + 经期饮食提示' },
+  { value: 'combo-abde', label: 'A+B+D+E', title: '紧凑识别 + 趋势 + 经期 + 多样性' },
 ];
 
 const COMBO_HINTS = {
-  'combo-abfd-7': '经期·紧凑A + B + F首次7天 + D',
-  'combo-abfc-7': '非经期·紧凑A + B + F首次7天 + C（总卡下）',
-  'combo-abfe-7': '非经期·适中热量·≥5种食：A + E + B + F首次7天',
-  'combo-abf-7': '非经期·适中·<5种食：A + B + F首次7天（无短提示）',
-  'combo-abdc-7': '成熟·经期·热量极端：A + B + D + C',
-  'combo-abde-7': '成熟·经期·适中·≥5种食：A + B + D + E',
-  'combo-abd-7': '成熟·经期·适中·<5种食：A + B + D',
-  'combo-abce-7': '成熟·非经期·极端·≥5种食：A + B + C + E',
-  'combo-abc-7': '成熟·非经期·极端·<5种食：A + B + C',
-  'combo-abe-7': '成熟·非经期·适中·≥5种食：A + B + E',
-  'combo-ab-7': '普通日·非经期·适中·<5种食：A + B（最常见）',
+  'combo-ab': '紧凑 A + B（7日趋势图 + 日均热量）',
+  'combo-abe': '紧凑 A + B + E（日均热量后接多样性文案，无底色块）',
+  'combo-abd': '紧凑 A + B + D（日均热量后接经期饮食建议，无底色块）',
+  'combo-abde': '紧凑 A + B + D + E（先多样性、再经期，两段纯文案）',
 };
 
 const COMBO_PERIOD_CTX = { phase: 'period', day: 2 };
 
-function createDietFeedbackComboDemoEntry(comboScenario = 'combo-abfd-7') {
+function createDietFeedbackComboDemoEntry(comboScenario = 'combo-ab') {
   const presetByScenario = {
-    'combo-abfd-7': { food: 'lunch', milestone: 7, cycle: COMBO_PERIOD_CTX },
-    'combo-abfc-7': { food: 'combo2High', milestone: 7, cycle: null },
-    'combo-abfe-7': { food: 'lunch', milestone: 7, cycle: null, todayFoodCount: 5 },
-    'combo-abf-7': { food: 'lunch', milestone: 7, cycle: null, todayFoodCount: 3 },
-    'combo-abdc-7': { food: 'combo2High', cycle: COMBO_PERIOD_CTX, todayFoodCount: 3 },
-    'combo-abde-7': { food: 'lunch', cycle: COMBO_PERIOD_CTX, todayFoodCount: 5 },
-    'combo-abd-7': { food: 'lunch', cycle: COMBO_PERIOD_CTX, todayFoodCount: 3 },
-    'combo-abce-7': { food: 'combo2High', cycle: null, todayFoodCount: 5 },
-    'combo-abc-7': { food: 'combo2High', cycle: null, todayFoodCount: 3 },
-    'combo-abe-7': { food: 'lunch', cycle: null, todayFoodCount: 5 },
-    'combo-ab-7': { food: 'lunch', cycle: null, todayFoodCount: 3 },
+    'combo-ab': { food: 'lunch', cycle: null, todayFoodCount: 3 },
+    'combo-abe': { food: 'lunch', cycle: null, todayFoodCount: 5 },
+    'combo-abd': { food: 'lunch', cycle: COMBO_PERIOD_CTX, todayFoodCount: 3 },
+    'combo-abde': { food: 'lunch', cycle: COMBO_PERIOD_CTX, todayFoodCount: 5 },
   };
-  const preset = presetByScenario[comboScenario] || presetByScenario['combo-abfd-7'];
+  const preset = presetByScenario[comboScenario] || presetByScenario['combo-ab'];
   const data = DIET_SCENARIOS[preset.food] || DIET_SCENARIOS.lunch;
   const entry = createDietCaptureGroup({ scenario: preset.food });
   entry.isNew = false;
   entry.displayScenario = comboScenario;
   entry.recognitionScenario = 'success';
   entry.userContext = buildDietUserContext(data, {
-    daysWithRecord: Math.max(data.daysWithRecord || 0, 7),
+    daysWithRecord: preset.daysWithRecord ?? Math.max(data.daysWithRecord || 0, 7),
     cycleData: preset.cycle ?? null,
     todayFoodCount: preset.todayFoodCount,
-    totalRecordDays: preset.milestone,
   });
   return entry;
 }
 
 function DietFeedbackComboScenarioBar() {
-  const [value, setValue] = React.useState('combo-abfd-7');
+  const [value, setValue] = React.useState('combo-ab');
 
   const handleSelect = (next) => {
     setValue(next);
@@ -699,7 +613,7 @@ function DietFeedbackComboScenarioBar() {
 
   return (
     <details className="demo-scene-dock demo-scene-dock-details is-dense">
-      <summary className="demo-scene-dock-summary">卡片组合（11）</summary>
+      <summary className="demo-scene-dock-summary">卡片组合（4）</summary>
       <div className="demo-scene-dock-options" role="toolbar" aria-label="饮食卡片组合场景">
         {DIET_FEEDBACK_COMBO_SCENARIOS.map((opt) => (
           <button
@@ -714,7 +628,7 @@ function DietFeedbackComboScenarioBar() {
           </button>
         ))}
       </div>
-      <p className="demo-scene-dock-hint">{COMBO_HINTS[value] || COMBO_HINTS['combo-abfd-7']}</p>
+      <p className="demo-scene-dock-hint">{COMBO_HINTS[value] || COMBO_HINTS['combo-ab']}</p>
     </details>
   );
 }
@@ -780,20 +694,16 @@ function DietFeedbackDisplayScenarioBar() {
   };
 
   const hintByScenario = {
-    guide: 'AI 区仅展示引导文案：再记录 N 天即可解锁趋势图',
+    guide: 'AI 可折叠标题 + 引导文案：再记录 N 天即可解锁趋势图',
     trend: 'AI 区仅展示近 7 日热量趋势柱状图',
-    'day-total': 'AI 区仅展示当日汇总：今天已记录 N 餐，合计约 XXX kcal',
-    'day-total-trend': 'AI 区展示当日汇总 + 7 日趋势图',
-    'day-total-trend-avg': 'AI 区展示当日汇总 + 7 日趋势图 + 7 日均值摘要',
-    'meal-insight': '本餐热量解读 + AI 引导：再记录 2 天即可解锁趋势图',
-    'cycle-diet': 'AI 区展示汇总 + 7 日趋势 + 均值，底部增加周期饮食关联提示',
-    diversity: '场景6 基础上，总卡路里与热量解读之间展示「今天吃了 N 种食物」',
-    'milestone-100': '场景2 趋势图后惊喜弹出满 100 天里程碑庆祝',
+    'day-total': 'AI 可折叠标题 + 当日汇总：今天已记录 N 餐，合计约 XXX kcal',
+    'day-total-trend': 'AI 区先展示趋势图，再展示当日汇总',
+    'day-total-trend-avg': 'AI 区先展示趋势图，再当日汇总，再 7 日均值',
   };
 
   return (
-    <div className="demo-scene-dock is-dense" role="toolbar" aria-label="饮食反馈展示场景切换">
-      <div className="demo-scene-dock-label">反馈展示</div>
+    <div className="demo-scene-dock is-dense" role="toolbar" aria-label="维度B反馈展示场景切换">
+      <div className="demo-scene-dock-label">维度B反馈展示</div>
       <div className="demo-scene-dock-options">
         {DIET_FEEDBACK_DISPLAY_SCENARIOS.map((opt) => (
           <button
